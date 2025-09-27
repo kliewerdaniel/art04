@@ -1,0 +1,116 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  role      String   // e.g., "volunteer", "admin"
+  createdAt DateTime @default(now())
+
+  // Relationships
+  interactions Interaction[]
+  allocations  Allocation[]
+}
+
+model Artist {
+  id          String   @id @default(cuid())
+  name        String
+  handle      String   @unique
+  bio         String
+  contactPref String
+  createdAt   DateTime @default(now())
+
+  // Relationships
+  artworks     Artwork[]
+  interactions Interaction[]
+  assessments  Assessment[]
+  allocations  Allocation[]
+  siteExports  SiteExport[]
+}
+
+model Artwork {
+  id          String   @id @default(cuid())
+  artistId    String
+  title       String
+  description String
+  price       Float
+  imagePath   String?
+  createdAt   DateTime @default(now())
+
+  // Relationships
+  artist Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+
+  @@index([artistId])
+}
+
+model Interaction {
+  id         String   @id @default(cuid())
+  artistId   String
+  volunteerId String
+  type       String   // e.g., "mentorship", "donation", "purchase"
+  quantity   Int?     // number of activities
+  money      Float?   // amount in cents
+  notes      String?
+  timestamp  DateTime @default(now())
+  location   String?
+
+  // Relationships
+  artist   Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  volunteer User  @relation(fields: [volunteerId], references: [id], onDelete: Cascade)
+
+  @@index([artistId])
+  @@index([volunteerId])
+}
+
+model Assessment {
+  id       String   @id @default(cuid())
+  artistId String
+  type     String   // e.g., "PHQ-9", "GAD-7"
+  answers  String   // JSON string of assessment responses
+  score    Float
+  createdAt DateTime @default(now())
+
+  // Relationships
+  artist Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+
+  @@index([artistId])
+}
+
+model Allocation {
+  id          String   @id @default(cuid())
+  volunteerId String
+  artistId    String
+  timeMinutes Float
+  moneyCents  Int
+  purpose     String
+  createdAt   DateTime @default(now())
+
+  // Relationships
+  volunteer User   @relation(fields: [volunteerId], references: [id], onDelete: Cascade)
+  artist    Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+
+  @@index([volunteerId])
+  @@index([artistId])
+}
+
+model SiteExport {
+  id         String   @id @default(cuid())
+  artistId   String
+  generatedAt DateTime @default(now())
+  zipPath    String   // Path to exported ZIP file
+
+  // Relationships
+  artist Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+
+  @@index([artistId])
+}
