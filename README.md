@@ -84,8 +84,8 @@ Before running Art01 locally, ensure you have:
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/art01.git
-cd art01
+git clone https://github.com/kliewerdaniel/art04.git
+cd art04
 ```
 
 ### 2. Install Dependencies
