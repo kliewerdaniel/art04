@@ -1,16 +1,19 @@
-import { auth } from "@/lib/auth"
+import { withAuth } from "next-auth/middleware"
 
-export default auth((req) => {
-  const { pathname } = req.nextUrl
+export default withAuth(
+  function middleware(req) {
+    const { pathname } = req.nextUrl
 
-  if (pathname.startsWith('/dashboard') && !req.auth) {
-    return Response.redirect(new URL('/auth/signin', req.nextUrl))
+    if (pathname.startsWith('/api/admin') && req.nextauth.token?.role !== 'admin') {
+      return new Response('Unauthorized', { status: 403 })
+    }
+  },
+  {
+    callbacks: {
+      authorized: ({ token }) => !!token
+    }
   }
-
-  if (pathname.startsWith('/api/admin') && req.auth?.user?.role !== 'admin') {
-    return new Response('Unauthorized', { status: 403 })
-  }
-})
+)
 
 export const config = {
   matcher: ['/dashboard/:path*', '/api/admin/:path*'],

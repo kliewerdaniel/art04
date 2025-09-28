@@ -1,5 +1,8 @@
 # Art01: Art + Philanthropy Platform
 
+![alt text](ss.png)
+![alt text](ss2.png)
+
 An open-source platform connecting volunteers with homeless artists through mentorship, financial support, and mental health assessments.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
