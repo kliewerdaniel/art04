@@ -1,29 +1,32 @@
-import NextAuth from "next-auth"
+import { NextAuthOptions } from "next-auth"
+import { PrismaAdapter } from "@next-auth/prisma-adapter"
+import { prisma } from "./prisma"
 import EmailProvider from "next-auth/providers/email"
 import GitHubProvider from "next-auth/providers/github"
-import { PrismaAdapter } from "@next-auth/prisma-adapter"
-import { PrismaClient } from "@prisma/client"
 
-const prisma = new PrismaClient()
-
-export const { auth, handlers, signIn, signOut } = NextAuth({
+export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     EmailProvider({
-      server: process.env.EMAIL_SERVER,
+      server: {
+        host: process.env.EMAIL_SERVER_HOST,
+        port: Number(process.env.EMAIL_SERVER_PORT),
+        auth: {
+          user: process.env.EMAIL_SERVER_USER,
+          pass: process.env.EMAIL_SERVER_PASSWORD,
+        },
+      },
       from: process.env.EMAIL_FROM,
     }),
-    ...(process.env.GITHUB_ID && process.env.GITHUB_SECRET ? [
-        GitHubProvider({
-          clientId: process.env.GITHUB_ID,
-          clientSecret: process.env.GITHUB_SECRET,
-        })
-      ] : []),
+    ...(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET
+      ? [
+          GitHubProvider({
+            clientId: process.env.GITHUB_CLIENT_ID,
+            clientSecret: process.env.GITHUB_CLIENT_SECRET,
+          }),
+        ]
+      : []),
   ],
-  pages: {
-    signIn: "/auth/signin",
-    verifyRequest: "/auth/verify-request",
-  },
   callbacks: {
     async session({ session, user }) {
       if (session.user) {
@@ -32,12 +35,20 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       }
       return session
     },
-    async jwt({ token, user }) {
-      if (user) {
-        token.role = user.role
+    async signIn({ user, account, profile }) {
+      // Auto-assign volunteer role for new users
+      if (user.email && !user.role) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { role: "volunteer" },
+        })
       }
-      return token
+      return true
     },
   },
+  pages: {
+    signIn: "/auth/signin",
+    error: "/auth/error",
+  },
   secret: process.env.NEXTAUTH_SECRET,
-})
+}

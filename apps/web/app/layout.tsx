@@ -1,8 +1,12 @@
 import "@/styles/globals.css"
+import { Inter } from "next/font/google"
+import { SessionProvider } from "@/components/SessionProvider"
+
+const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
-  title: 'Art01',
-  description: 'Art + Philanthropy platform',
+  title: 'Art01 - Art + Philanthropy Platform',
+  description: 'Connect volunteers with homeless artists through mentorship, financial support, and mental health assessments.',
 }
 
 export default function RootLayout({
@@ -12,7 +16,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className={inter.className}>
+        <SessionProvider>
+          {children}
+        </SessionProvider>
+      </body>
     </html>
   )
 }
