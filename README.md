@@ -2,6 +2,7 @@
 
 ![alt text](ss.png)
 ![alt text](ss2.png)
+![alt text](ss3.png)
 
 An open-source platform connecting volunteers with homeless artists through mentorship, financial support, and mental health assessments.
 
